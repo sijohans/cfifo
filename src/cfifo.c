@@ -19,7 +19,6 @@
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 #endif
 
-#define CFIFO_SIZE      (p_cfifo->write_pos - p_cfifo->read_pos)
 #define CFIFO_WRITE_POS (p_cfifo->write_pos % p_cfifo->buf_size)
 #define CFIFO_READ_POS  (p_cfifo->read_pos % p_cfifo->buf_size)
 #define CFIFO_WRITE_OFFSET  (CFIFO_WRITE_POS * p_cfifo->item_size)
@@ -27,7 +26,7 @@
 
 /*======= Local function prototypes =========================================*/
 
-static void cfifoi_put(cfifo_t *p_cfifo, const void *p_item);
+static void cfifoi_put(cfifo_t *p_cfifo, const void * const p_item);
 static void cfifoi_get(cfifo_t *p_cfifo, void *p_item);
 
 /*======= Global function implementations ===================================*/
@@ -52,14 +51,19 @@ cfifo_ret_t cfifo_init(cfifo_t *p_cfifo,
 }
 
 cfifo_ret_t cfifo_put(cfifo_t *p_cfifo,
-                      const void *p_item)
+                      const void * const p_item)
 {
+    uint32_t size;
+
     if (p_cfifo == 0 || p_item == 0) {
         /* Error, null pointers. */
         return CFIFO_ERR_NULL;
     }
 
-    if (CFIFO_SIZE < p_cfifo->buf_size) {
+    size = p_cfifo->write_pos;
+    size -= p_cfifo->read_pos;
+
+    if (size < p_cfifo->buf_size) {
         cfifoi_put(p_cfifo, p_item);
         return CFIFO_SUCCESS;
     }
@@ -67,7 +71,7 @@ cfifo_ret_t cfifo_put(cfifo_t *p_cfifo,
 }
 
 cfifo_ret_t cfifo_write(cfifo_t *p_cfifo,
-                        const void *p_items,
+                        const void * const p_items,
                         uint32_t *p_num_items)
 {
     uint32_t i;
@@ -78,7 +82,10 @@ cfifo_ret_t cfifo_write(cfifo_t *p_cfifo,
         return CFIFO_ERR_NULL;
     }
 
-    (*p_num_items) = MIN((*p_num_items), p_cfifo->buf_size - CFIFO_SIZE);
+    i = p_cfifo->write_pos;
+    i -= p_cfifo->read_pos;
+
+    (*p_num_items) = MIN((*p_num_items), p_cfifo->buf_size - i);
 
     for (i = 0; i < (*p_num_items); i++)
     {
@@ -92,12 +99,17 @@ cfifo_ret_t cfifo_write(cfifo_t *p_cfifo,
 cfifo_ret_t cfifo_get(cfifo_t *p_cfifo,
                       void *p_item)
 {
+    uint32_t size;
+
     if (p_cfifo == NULL || p_item == NULL) {
         /* Error, null pointers. */
         return CFIFO_ERR_NULL;
     }
 
-    if (CFIFO_SIZE > 0)
+    size = p_cfifo->write_pos;
+    size -= p_cfifo->read_pos;
+
+    if (size > 0)
     {
         cfifoi_get(p_cfifo, p_item);
         return CFIFO_SUCCESS;
@@ -118,7 +130,10 @@ cfifo_ret_t cfifo_read(cfifo_t *p_cfifo,
         return CFIFO_ERR_NULL;
     }
 
-    (*p_num_items) = MIN((*p_num_items), CFIFO_SIZE);
+    i = p_cfifo->write_pos;
+    i -= p_cfifo->read_pos;
+
+    (*p_num_items) = MIN((*p_num_items), i);
 
     for (i = 0; i < (*p_num_items); i++) {
         cfifoi_get(p_cfifo, &p_dest[i * p_cfifo->item_size]);
@@ -164,7 +179,7 @@ cfifo_ret_t cfifo_flush(cfifo_t *p_cfifo)
 
 /*======= Local function implementations ====================================*/
 
-static void cfifoi_put(cfifo_t *p_cfifo, const void *p_item)
+static void cfifoi_put(cfifo_t *p_cfifo, const void * const p_item)
 {
     memcpy(&p_cfifo->p_buf[CFIFO_WRITE_OFFSET],
            p_item,

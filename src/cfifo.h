@@ -15,7 +15,7 @@
 
 /*======= Public macro definitions ==========================================*/
 
-#define CFIFO_CREATE(p_cfifo, item_size, num_items)                         \
+#define CFIFO_CREATE_STATIC(p_cfifo, item_size, num_items)                  \
     do {                                                                    \
         static cfifo_t cfifo;                                               \
         static uint8_t cfifo_buf[(item_size)*(num_items)];                  \
@@ -72,7 +72,7 @@ cfifo_ret_t cfifo_init(cfifo_t *p_cfifo,
  *
  */
 cfifo_ret_t cfifo_put(cfifo_t *p_cfifo,
-                      const void *p_item);
+                      const void * const p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -87,8 +87,8 @@ cfifo_ret_t cfifo_put(cfifo_t *p_cfifo,
  *
  */
 cfifo_ret_t cfifo_write(cfifo_t *p_cfifo,
-                        const void *p_items,
-                        uint32_t *p_num_items);
+                        const void * const p_items,
+                        uint32_t * const p_num_items);
 
 /**
  * @brief TODO: Brief description.

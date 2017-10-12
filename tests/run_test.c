@@ -10,7 +10,7 @@ struct test {
     uint8_t *d;
 };
 
-int struct_test(void)
+void struct_test(void)
 {
 
     cfifo_t *fifo;
@@ -18,7 +18,7 @@ int struct_test(void)
     struct test s;
     struct test h;
 
-    CFIFO_CREATE(fifo, sizeof(struct test), 15);
+    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 15);
     
     s.a = 1;
     s.b = 2;
@@ -32,8 +32,6 @@ int struct_test(void)
     assert(h.b == 2);
     assert(h.c == 3);
     assert(s.d == &b);
-
-    return 0;
 
 }
 
@@ -49,9 +47,9 @@ int main(void)
     uint8_t rdata[15];
     uint8_t data[15];
 
-    assert(struct_test() == 0);
+    struct_test();
 
-    CFIFO_CREATE(fifo, 1, 15);
+    CFIFO_CREATE_STATIC(fifo, 1, 15);
 
     /* Empty queue from stat */
     assert(cfifo_size(fifo) == 0);
