@@ -159,6 +159,39 @@ cfifo_ret_t cfifo_peek(cfifo_t *p_cfifo,
 
 }
 
+uint32_t cfifo_contains(cfifo_t *p_cfifo,
+                        void *p_item)
+{
+
+    /* Store original read pos. */
+    uint32_t i;
+    uint32_t size;
+    uint32_t read_pos;
+    uint32_t items_found = 0;
+
+    if (p_cfifo == NULL || p_item == NULL) {
+        /* Error, null pointers. */
+        return 0;
+    }
+
+    size = p_cfifo->write_pos;
+    size -= p_cfifo->read_pos;
+    read_pos = p_cfifo->read_pos;
+
+    for (i = 0; i < size; i++) {
+        if (memcmp(p_item,
+                   &p_cfifo->p_buf[CFIFO_READ_OFFSET],
+                   p_cfifo->item_size) == 0) {
+            items_found++;
+        }
+        p_cfifo->read_pos++;
+    }
+
+    p_cfifo->read_pos = read_pos;
+
+    return items_found;
+}
+
 uint32_t cfifo_size(cfifo_t *p_cfifo)
 {
     return (p_cfifo) ? (p_cfifo->write_pos - p_cfifo->read_pos) : 0;

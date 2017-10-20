@@ -28,11 +28,43 @@ void struct_test(void)
     assert(cfifo_put(fifo, &s) == CFIFO_SUCCESS);
     assert(cfifo_size(fifo) == 1);
     assert(cfifo_get(fifo, &h) == CFIFO_SUCCESS);
+    assert(h.a == s.a);
+    assert(h.b == s.b);
+    assert(h.c == s.c);
+    assert(h.d == s.d);
+
+}
+
+void contains_test(void) {
+    cfifo_t *fifo;
+    uint8_t b = 4;
+    struct test s;
+    struct test h;
+
+    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 15);
+    
+    s.a = 1;
+    s.b = 2;
+    s.c = 3;
+    s.d = &b;
+
+    assert(cfifo_contains(fifo, NULL) == 0);
+    assert(cfifo_contains(NULL, NULL) == 0);
+    assert(cfifo_contains(NULL, &s) == 0);
+
+    assert(cfifo_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_contains(fifo, &s) == 1);
+    assert(cfifo_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_contains(fifo, &s) == 3);
+    s.a = 3;
+    assert(cfifo_contains(fifo, &s) == 0);
+
+    assert(cfifo_get(fifo, &h) == CFIFO_SUCCESS);
     assert(h.a == 1);
     assert(h.b == 2);
     assert(h.c == 3);
-    assert(s.d == &b);
-
+    assert(h.d == &b);
 }
 
 int main(void)
@@ -48,6 +80,7 @@ int main(void)
     uint8_t data[15];
 
     struct_test();
+    contains_test();
 
     CFIFO_CREATE_STATIC(fifo, 1, 15);
 

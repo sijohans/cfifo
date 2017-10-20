@@ -135,6 +135,18 @@ cfifo_ret_t cfifo_peek(cfifo_t *p_cfifo,
                        void *p_item);
 
 /**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param p_cfifo [description]
+ * @param p_item [description]
+ * 
+ * @return
+ */
+uint32_t cfifo_contains(cfifo_t *p_cfifo,
+                        void *p_item);
+
+/**
  * @brief TODO: Brief description.
  *
  * TODO: Write description.
