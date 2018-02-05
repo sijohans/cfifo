@@ -1,7 +1,8 @@
 #!/bin/sh
-mkdir -p _build
-cd _build
+mkdir -p build
+cd build
 #-DSANITIZE_ADDRESS=On -DSANITIZE_UNDEFINED=On
+
 cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 make
 make test

@@ -1,3 +1,6 @@
 language: C
 install: make cmake
+compiler:
+  - clang
+  - gcc
 script: cmake . && make && make test
