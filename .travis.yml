@@ -3,4 +3,11 @@ install: make cmake
 compiler:
   - clang
   - gcc
-script: cmake . && make && make test
+script:
+  - cmake -DSANITIZE_ADDRESS=On -DSANITIZE_UNDEFINED=On .
+  - make
+  - make test
+  - gcov src/CMakeFiles/cfifo.dir/cfifo.c.gcno 
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
