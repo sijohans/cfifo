@@ -4,10 +4,7 @@ compiler:
   - clang
   - gcc
 script:
-  - cmake -DSANITIZE_ADDRESS=On -DSANITIZE_UNDEFINED=On .
-  - make
-  - make test
-  - gcov src/CMakeFiles/cfifo.dir/cfifo.c.gcno 
+  - cmake -DSANITIZE_ADDRESS=On -DSANITIZE_UNDEFINED=On . && make && make test && gcov src/CMakeFiles/cfifo.dir/cfifo.c.gcno 
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
