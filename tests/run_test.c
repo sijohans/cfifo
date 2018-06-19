@@ -189,6 +189,24 @@ int main(void)
     assert(cfifo_flush(fifo) == CFIFO_SUCCESS);
     assert(cfifo_size(fifo) == 0);
 
+    /* Simulate fifo counter overflow */
+    fifo->write_pos = 0 - 5;
+    fifo->read_pos = 0 - 5;
+    for (i = 0; i < 16; i++)
+    {
+        a = (uint8_t) i;
+        assert(cfifo_put(fifo, &a) == CFIFO_SUCCESS);
+        assert(cfifo_size(fifo) == (i+1));
+    }
+
+    for (i = 0; i < 16; i++)
+    {
+        assert(cfifo_size(fifo) == 16 - i);
+        assert(cfifo_get(fifo, &a) == CFIFO_SUCCESS);
+    }
+
+    assert(cfifo_size(fifo) == 0);
+
     assert(cfifo_put(NULL, &a) == CFIFO_ERR_NULL);
     assert(cfifo_put(NULL, NULL) == CFIFO_ERR_NULL);
     assert(cfifo_put(fifo, NULL) == CFIFO_ERR_NULL);
