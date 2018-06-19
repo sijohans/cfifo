@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include "cfifo.h"
 
@@ -18,7 +19,7 @@ void struct_test(void)
     struct test s;
     struct test h;
 
-    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 15);
+    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 16);
     
     s.a = 1;
     s.b = 2;
@@ -41,7 +42,7 @@ void contains_test(void) {
     struct test s;
     struct test h;
 
-    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 15);
+    CFIFO_CREATE_STATIC(fifo, sizeof(struct test), 16);
     
     s.a = 1;
     s.b = 2;
@@ -73,16 +74,18 @@ int main(void)
     cfifo_t *fifo;
     uint8_t a;
     uint8_t b;
-    uint32_t size;
-    uint32_t i;
+    size_t size;
+    size_t i;
 
-    uint8_t rdata[15];
-    uint8_t data[15];
+    uint8_t rdata[16];
+    uint8_t data[16];
 
     struct_test();
     contains_test();
 
-    CFIFO_CREATE_STATIC(fifo, 1, 15);
+    CFIFO_CREATE_STATIC(fifo, 1, 16);
+    assert(cfifo_available(fifo) == 16);
+    assert(cfifo_peek(fifo, &a) == CFIFO_ERR_EMPTY);
 
     /* Empty queue from stat */
     assert(cfifo_size(fifo) == 0);
@@ -97,7 +100,7 @@ int main(void)
     assert(cfifo_size(fifo) == 0);
 
     /* Fill and empty queue */
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         a = (uint8_t) i;
         assert(cfifo_put(fifo, &a) == CFIFO_SUCCESS);
@@ -106,34 +109,34 @@ int main(void)
 
     assert(cfifo_put(fifo, &a) == CFIFO_ERR_FULL);
 
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         assert(cfifo_get(fifo, &a) == CFIFO_SUCCESS);
         assert(a == i);
-        assert(cfifo_size(fifo) == 14 - i);
+        assert(cfifo_size(fifo) == 15 - i);
     }
 
     assert(cfifo_get(fifo, &b) == CFIFO_ERR_EMPTY);
 
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         data[i] = i+1;
     }
 
-    size = 15;
+    size = 16;
 
     assert(cfifo_write(fifo, data, &size) == CFIFO_SUCCESS);
-    assert(size == 15);
-    assert(cfifo_size(fifo) == 15);
+    assert(size == 16);
+    assert(cfifo_size(fifo) == 16);
 
     
-    size = 15;
+    size = 16;
     assert(cfifo_read(fifo, rdata, &size) == CFIFO_SUCCESS);
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         assert(rdata[i] == data[i]);
     }
-    assert(size == 15);
+    assert(size == 16);
     assert(cfifo_size(fifo) == 0);
 
     size = 13;
@@ -173,7 +176,7 @@ int main(void)
     assert(b == a);
     assert(cfifo_size(fifo) == 0);
 
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 16; i++)
     {
         data[i] = i+1;
     }
@@ -181,8 +184,8 @@ int main(void)
     size = 17;
 
     assert(cfifo_write(fifo, data, &size) == CFIFO_SUCCESS);
-    assert(size == 15);
-    assert(cfifo_size(fifo) == 15);
+    assert(size == 16);
+    assert(cfifo_size(fifo) == 16);
     assert(cfifo_flush(fifo) == CFIFO_SUCCESS);
     assert(cfifo_size(fifo) == 0);
 
@@ -220,7 +223,21 @@ int main(void)
 
     assert(cfifo_flush(NULL) == CFIFO_ERR_NULL);
 
-    assert(cfifo_init(NULL, NULL, 0, 0) == CFIFO_ERR_NULL);
+    assert(cfifo_init(NULL, NULL, 0, 0, 0) == CFIFO_ERR_NULL);
+    memset(fifo, 0x00, sizeof(cfifo_t));
+    assert(cfifo_init(fifo, rdata, 16, 1, 16) == CFIFO_SUCCESS);
+    assert(cfifo_init(fifo, rdata, 15, 1, 15) == CFIFO_ERR_BAD_SIZE);
+    assert(cfifo_init(fifo, rdata, 16, 1, 15) == CFIFO_ERR_BAD_SIZE);
+    assert(cfifo_put(fifo, &a) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_write(fifo, &a, &size) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_read(fifo, &a, &size) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_get(fifo, &a) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_peek(fifo, &a) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_flush(fifo) == CFIFO_ERR_INVALID_STATE);
+
+
+    assert(cfifo_size(fifo) == 0);
+    assert(cfifo_available(fifo) == 0);
 
     printf("cfifo test passed!\r\n");
 
