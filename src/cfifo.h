@@ -61,7 +61,7 @@ extern "C" {
 typedef struct cfifo_s *cfifo_t;
 
 struct cfifo_s {
-    uint8_t * const p_buf;
+    uint8_t         *p_buf;
     size_t          num_items_mask;
     size_t          item_size;
     volatile size_t read_pos;
