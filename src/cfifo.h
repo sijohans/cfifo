@@ -26,9 +26,8 @@ extern "C" {
  * is not a power of 2. I.e., 2, 4, 8, 16, ... 2^n.
  */
 #define CFIFO_IS_POW_2(x)   (((x) > 0) && (((x) & (((x) - 1))) == 0))
-#define CFIFO_BUF_SIZE2(y, x) \
-        ((CFIFO_IS_POW_2((size_t)x) && (((x)*(y)) <= SIZE_MAX)) ? ((x)*(y)) : -1)
-#define CFIFO_BUF_SIZE(y, x) CFIFO_BUF_SIZE2((size_t)(x), (size_t)(y))
+#define CFIFO_BUF_SIZE(y, x) \
+        ((CFIFO_IS_POW_2(x) && (((x)*(y)) <= SIZE_MAX)) ? (int) ((x)*(y)) : (int) -1)
 
 #define CFIFO_STRUCT_DEF(type, capacity, buf)                           \
     {                                                                   \
