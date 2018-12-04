@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "cfifo.h"
+#include "cfifo_generic.h"
 
 struct test {
     uint8_t a;
@@ -16,11 +16,11 @@ void struct_test(void)
     uint8_t b = 4;
     struct test s;
     struct test h;
-    CFIFO_CREATE(fifo, struct test, 16);
+    CFIFO_GENERIC_CREATE(fifo, struct test, 16);
     assert(CFIFO_BUF_SIZE(sizeof(struct test), 7) == -1);
     assert(CFIFO_BUF_SIZE(sizeof(struct test), 16) == (sizeof(struct test)*16));
     assert((fifo->num_items_mask + 1) == 16);
-    
+
     s.a = 1;
     s.b = 2;
     s.c = 3;
@@ -42,8 +42,8 @@ void contains_test(void) {
     struct test s;
     struct test h;
 
-    CFIFO_CREATE_STATIC(fifo, struct test, 16);
-    
+    CFIFO_GENERIC_CREATE_STATIC(fifo, struct test, 16);
+
     s.a = 1;
     s.b = 2;
     s.c = 3;
@@ -82,7 +82,7 @@ int main(void)
     struct_test();
     contains_test();
 
-    CFIFO_CREATE(fifo, uint8_t, 16);
+    CFIFO_GENERIC_CREATE(fifo, uint8_t, 16);
     assert(cfifo_available(fifo) == 16);
     assert(cfifo_peek(fifo, &a) == CFIFO_ERR_EMPTY);
 
@@ -128,7 +128,7 @@ int main(void)
     assert(size == 16);
     assert(cfifo_size(fifo) == 16);
 
-    
+
     size = 16;
     assert(cfifo_read(fifo, rdata, &size) == CFIFO_SUCCESS);
     for (i = 0; i < 16; i++)
@@ -241,11 +241,11 @@ int main(void)
     assert(cfifo_flush(NULL) == CFIFO_ERR_NULL);
 
     assert(cfifo_init(NULL, NULL, 0, 0, 0) == CFIFO_ERR_NULL);
-    memset(fifo, 0x00, sizeof(struct cfifo_s));
+    memset(fifo, 0x00, sizeof(struct cfifo_generic));
     assert(cfifo_init(fifo, rdata, 16, 1, 16) == CFIFO_SUCCESS);
-    memset(fifo, 0x00, sizeof(struct cfifo_s));
+    memset(fifo, 0x00, sizeof(struct cfifo_generic));
     assert(cfifo_init(fifo, rdata, 15, 1, 15) == CFIFO_ERR_BAD_SIZE);
-    memset(fifo, 0x00, sizeof(struct cfifo_s));
+    memset(fifo, 0x00, sizeof(struct cfifo_generic));
     assert(cfifo_init(fifo, rdata, 16, 1, 15) == CFIFO_ERR_BAD_SIZE);
     assert(cfifo_put(fifo, &a) == CFIFO_ERR_INVALID_STATE);
     assert(cfifo_write(fifo, &a, &size) == CFIFO_ERR_INVALID_STATE);

@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 /**
- * @file cfifo.h
+ * @file cfifo_generic.h
  *
  * Description
  *
@@ -29,7 +29,19 @@ extern "C" {
 #define CFIFO_BUF_SIZE(y, x) \
         ((CFIFO_IS_POW_2(x) && (((x)*(y)) <= SIZE_MAX)) ? (int) ((x)*(y)) : (int) -1)
 
-#define CFIFO_STRUCT_DEF(type, capacity, buf)                           \
+/**
+ * @brief Macro to define a cfifo structure.
+ *
+ * Designated initializers, i.e.:
+ * {
+ *     .pbuf = ...,
+ *     .num_items = ...,
+ * }
+ *
+ * Is not used to support c89 and C++.
+ *
+ */
+#define CFIFO__GENERIC_STRUCT_DEF(type, capacity, buf)                  \
     {                                                                   \
         buf,                                                            \
         ((capacity) - 1),                                               \
@@ -38,37 +50,57 @@ extern "C" {
         0                                                               \
     }
 
-#define CFIFO_CREATE(p_cfifo, type, capacity) \
+/**
+ * @brief Creates a cfifo structure and the buffer.
+ *
+ * Used to create a cfifo. The capacity (number of elements) MUST be
+ * power or two. I.e., 2, 4, 8, ... 2^n. If the capacity is not power
+ * of two the usade of this macro will result in a compile error.
+ *
+ * CFIFO_GENERIC_CREATE_STATIC(my_fifo, uint32_t, 32);
+ *
+ * uint32_t a = 4;
+ * cfifo_put(my_fifo, &a);
+ *
+ */
+#define CFIFO_GENERIC_CREATE(p_cfifo, type, capacity)                   \
     uint8_t                                                             \
             p_cfifo##cfifo_buf##buf##__LINE__                           \
             [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
-    struct cfifo_s p_cfifo##data##__LINE__ = CFIFO_STRUCT_DEF(          \
+    struct cfifo_generic                                                \
+        p_cfifo##data##__LINE__ = CFIFO__GENERIC_STRUCT_DEF(            \
         type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
     );                                                                  \
     cfifo_t p_cfifo = &p_cfifo##data##__LINE__
-#define CFIFO_CREATE_STATIC(p_cfifo, type, capacity) \
+
+/**
+ * @brief Statically creates a cfifo structure and the buffer.
+ *
+ * Used to create a cfifo. The capacity (number of elements) MUST be
+ * power or two. I.e., 2, 4, 8, ... 2^n. If the capacity is not power
+ * of two the usade of this macro will result in a compile error.
+ *
+ * CFIFO_GENERIC_CREATE_STATIC(my_fifo, uint32_t, 32);
+ *
+ * uint32_t a = 4;
+ * cfifo_put(my_fifo, &a);
+ *
+ */
+#define CFIFO_GENERIC_CREATE_STATIC(p_cfifo, type, capacity)            \
     static uint8_t                                                      \
             p_cfifo##cfifo_buf##buf##__LINE__                           \
             [CFIFO_BUF_SIZE((sizeof(type)),(capacity))];                \
-    static struct cfifo_s p_cfifo##data##__LINE__ = CFIFO_STRUCT_DEF(   \
+    static struct cfifo_generic                                         \
+            p_cfifo##data##__LINE__ = CFIFO__GENERIC_STRUCT_DEF(        \
         type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
     );                                                                  \
     static cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 
-#define CFIFO_DEF(p_cfifo, type, capacity)                              \
-    uint8_t                                                             \
-            p_cfifo##cfifo_buf##buf##__LINE__                           \
-            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
-    struct cfifo_s p_cfifo##data##__LINE__ =  CFIFO_STRUCT_DEF(         \
-        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
-    );                                                                  \
-    cfifo_t p_cfifo = &p_cfifo##data##__LINE__
-
 /*======= Type Definitions and declarations =================================*/
 
-typedef struct cfifo_s *cfifo_t;
+typedef struct cfifo_generic *cfifo_t;
 
-struct cfifo_s {
+struct cfifo_generic {
     uint8_t         *p_buf;
     size_t          num_items_mask;
     size_t          item_size;
@@ -88,20 +120,13 @@ typedef enum cfifo_ret_e {
 /*======= Public function declarations ======================================*/
 
 /**
- * @brief TODO: Brief description.
+ * @brief Initiates a cfifo.
  *
- * TODO: Write description.
- *
- * @param   p_cfifo
- * @param   p_buf
- * @param   buf_size
- * @param   item_size
- *
- * @return  CFIFO_SUCCESS
+ * The buffer MUST be
  *
  */
 cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
-                       uint8_t *p_buf,
+                       void *p_buf,
                        size_t num_items,
                        size_t item_size,
                        size_t buf_size);
@@ -183,10 +208,10 @@ cfifo_ret_t cfifo_peek(cfifo_t p_cfifo,
 /**
  * @brief [brief description]
  * @details [long description]
- * 
+ *
  * @param p_cfifo [description]
  * @param p_item [description]
- * 
+ *
  * @return
  */
 size_t cfifo_contains(cfifo_t p_cfifo,

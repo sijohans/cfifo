@@ -5,7 +5,7 @@ macro(do_test arg)
 	add_dependencies(${arg} ${arg} cfifo)
 	add_sanitizers(${arg})
 	add_test(${arg} ${arg})
-	target_link_libraries(${arg} cfifo)
+	target_link_libraries(${arg} cfifo_generic)
 endmacro(do_test)
 
 include_directories (../src)
