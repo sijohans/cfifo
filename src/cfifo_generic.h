@@ -215,7 +215,7 @@ cfifo_ret_t cfifo_peek(cfifo_t p_cfifo,
  * @return
  */
 size_t cfifo_contains(cfifo_t p_cfifo,
-                        void *p_item);
+                      void *p_item);
 
 /**
  * @brief TODO: Brief description.

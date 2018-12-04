@@ -52,7 +52,7 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
         return CFIFO_ERR_BAD_SIZE;
     }
 
-    if (!((item_size > 0) && (buf_size/item_size == num_items)))
+    if (!((item_size > 0) && (buf_size / item_size == num_items)))
     {
         return CFIFO_ERR_BAD_SIZE;
     }
@@ -196,7 +196,7 @@ cfifo_ret_t cfifo_peek(cfifo_t p_cfifo,
 }
 
 size_t cfifo_contains(cfifo_t p_cfifo,
-                        void *p_item)
+                      void *p_item)
 {
 
     /* Store original read pos. */
