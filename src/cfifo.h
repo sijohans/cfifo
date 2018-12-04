@@ -33,27 +33,29 @@ extern "C" {
     scope uint8_t                                                       \
             cfifo_buf##buffer##__LINE__                                 \
             [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
-    scope struct cfifo_s p_cfifo##data##__LINE__ = {                    \
-        .p_buf = cfifo_buf##buffer##__LINE__,                           \
-        .num_items_mask = ((capacity) - 1),                             \
-        .item_size = sizeof(type),                                      \
-        .read_pos = 0,                                                  \
-        .write_pos = 0                                                  \
-    }; \
-    scope cfifo_t p_cfifo = &p_cfifo##data##__LINE__;
+    scope struct cfifo_s p_cfifo##data##__LINE__;                       \
+    p_cfifo##data##__LINE__.p_buf = cfifo_buf##buffer##__LINE__;        \
+    p_cfifo##data##__LINE__.num_items_mask = ((capacity) - 1);          \
+    p_cfifo##data##__LINE__.item_size = sizeof(type);                   \
+    p_cfifo##data##__LINE__.read_pos = 0;                               \
+    p_cfifo##data##__LINE__.write_pos = 0;                              \
+    scope cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 
 #define CFIFO_CREATE(p_cfifo, type, capacity) \
     _CFIFO_CREATE(p_cfifo, type, capacity,)
 #define CFIFO_CREATE_STATIC(p_cfifo, type, capacity) \
     _CFIFO_CREATE(p_cfifo, type, capacity, static)
 
-#define CFIFO_DEF(type, capacity) \
-    &(struct cfifo_s) { \
-        .p_buf = (uint8_t[CFIFO_BUF_SIZE(sizeof(type),capacity)]) { 0 }, \
-        .num_items_mask = ((capacity) - 1), \
-        .item_size = sizeof(type), \
-        .read_pos = 0, \
-        .write_pos = 0 \
+/*
+ * Does not work with c++
+ */
+#define CFIFO_DEF(type, capacity)                                       \
+    &(struct cfifo_s) {                                                 \
+        .p_buf = (uint8_t[CFIFO_BUF_SIZE(sizeof(type),capacity)]) { 0 },\
+        .num_items_mask = ((capacity) - 1),                             \
+        .item_size = sizeof(type),                                      \
+        .read_pos = 0,                                                  \
+        .write_pos = 0                                                  \
     }
 
 /*======= Type Definitions and declarations =================================*/

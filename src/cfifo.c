@@ -57,13 +57,11 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
         return CFIFO_ERR_BAD_SIZE;
     }
 
-    (*p_cfifo) = (struct cfifo_s) {
-        .p_buf = p_buf,
-        .num_items_mask = num_items - 1,
-        .item_size = item_size,
-        .read_pos = 0,
-        .write_pos = 0
-    };
+    p_cfifo->p_buf = p_buf;
+    p_cfifo->num_items_mask = num_items - 1;
+    p_cfifo->item_size = item_size;
+    p_cfifo->read_pos = 0;
+    p_cfifo->write_pos = 0;
 
     return CFIFO_SUCCESS;
 }
