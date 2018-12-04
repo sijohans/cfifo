@@ -21,11 +21,20 @@ extern "C" {
 
 #ifndef CFIFO_SPECIFIC_TYPE
 #include <stdint.h> /* for uint8_t */
-#define CFIFO_SPECIFIC_TYPE uint8_t
+#define CFIFO_SPECIFIC_TYPE          uint8_t
+#define CFIFO_SPECIFIC_USE_MEMCMP    0
+#define CFIFO_SPECIFIC_USE_MEMCPY    0
 #endif
-#ifdef CFIFO_SPECIFIC_USE_MEMCPY
-#define CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
+#ifndef CFIFO_SPECIFIC_NAME
+#define CFIFO_SPECIFIC_NAME CFIFO_SPECIFIC_TYPE
 #endif
+#ifndef CFIFO_SPECIFIC_USE_MEMCPY
+#define CFIFO_SPECIFIC_USE_MEMCPY    1
+#endif
+#ifndef CFIFO_SPECIFIC_USE_MEMCMP
+#define CFIFO_SPECIFIC_USE_MEMCMP    1
+#endif
+
 
 /*
  * Helper macros that results in compile error if the capacity (number of items)
@@ -116,10 +125,10 @@ extern "C" {
 typedef struct cfifo_specific *cfifo_specific_t;
 
 struct cfifo_specific {
-  CFIFO_SPECIFIC_TYPE   *p_buf;
-  size_t                num_items_mask;
-  volatile size_t       read_pos;
-  volatile size_t       write_pos;
+    CFIFO_SPECIFIC_TYPE   *p_buf;
+    size_t                num_items_mask;
+    volatile size_t       read_pos;
+    volatile size_t       write_pos;
 };
 
 /*======= Public function declarations ======================================*/

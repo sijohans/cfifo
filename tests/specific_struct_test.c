@@ -12,7 +12,7 @@ struct test {
 };
 
 #define CFIFO_SPECIFIC_TYPE struct test
-#define CFIFO_SPECIFIC_USE_MEMCPY
+#define CFIFO_SPECIFIC_USE_MEMCPY 1
 #include "cfifo_specific.c"
 
 int main(void)
