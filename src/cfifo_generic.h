@@ -96,6 +96,17 @@ extern "C" {
     );                                                                  \
     static cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 
+/* Return codes */
+#ifndef CFIFO_RETURN_CODES
+#define CFIFO_RETURN_CODES
+#define CFIFO_SUCCESS               (0)
+#define CFIFO_ERR_NULL              (-1)
+#define CFIFO_ERR_EMPTY             (-2)
+#define CFIFO_ERR_FULL              (-3)
+#define CFIFO_ERR_BAD_SIZE          (-4)
+#define CFIFO_ERR_INVALID_STATE     (-5)
+#endif
+
 /*======= Type Definitions and declarations =================================*/
 
 typedef struct cfifo_generic *cfifo_t;
@@ -108,28 +119,20 @@ struct cfifo_generic {
     volatile size_t write_pos;
 };
 
-typedef enum cfifo_ret_e {
-    CFIFO_SUCCESS,
-    CFIFO_ERR_NULL,
-    CFIFO_ERR_EMPTY,
-    CFIFO_ERR_FULL,
-    CFIFO_ERR_BAD_SIZE,
-    CFIFO_ERR_INVALID_STATE
-} cfifo_ret_t;
-
 /*======= Public function declarations ======================================*/
 
 /**
  * @brief Initiates a cfifo.
  *
- * The buffer MUST be
+ * The buffer MUST be power of 2. Also, the buffer size
+ * must be equal to num_iteam * item_size.
  *
  */
-cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
-                       void *p_buf,
-                       size_t num_items,
-                       size_t item_size,
-                       size_t buf_size);
+int cfifo_init(cfifo_t p_cfifo,
+               void *p_buf,
+               size_t capacity,
+               size_t item_size,
+               size_t buf_size);
 
 /**
  * @brief TODO: Brief description.
@@ -142,8 +145,8 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_put(cfifo_t p_cfifo,
-                      const void * const p_item);
+int cfifo_put(cfifo_t p_cfifo,
+              const void * const p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -157,9 +160,9 @@ cfifo_ret_t cfifo_put(cfifo_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_write(cfifo_t p_cfifo,
-                        const void * const p_items,
-                        size_t * const p_num_items);
+int cfifo_write(cfifo_t p_cfifo,
+                const void * const p_items,
+                size_t * const p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -172,8 +175,8 @@ cfifo_ret_t cfifo_write(cfifo_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_get(cfifo_t p_cfifo,
-                      void *p_item);
+int cfifo_get(cfifo_t p_cfifo,
+              void *p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -187,9 +190,9 @@ cfifo_ret_t cfifo_get(cfifo_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_read(cfifo_t p_cfifo,
-                       void *p_items,
-                       size_t *p_num_items);
+int cfifo_read(cfifo_t p_cfifo,
+               void *p_items,
+               size_t *p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -202,8 +205,8 @@ cfifo_ret_t cfifo_read(cfifo_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_peek(cfifo_t p_cfifo,
-                       void *p_item);
+int cfifo_peek(cfifo_t p_cfifo,
+               void *p_item);
 
 /**
  * @brief [brief description]
@@ -254,7 +257,7 @@ size_t cfifo_available(cfifo_t p_cfifo);
  * @return  CFIFO_SUCCESS
  *
  */
-cfifo_ret_t cfifo_flush(cfifo_t p_cfifo);
+int cfifo_flush(cfifo_t p_cfifo);
 
 #ifdef __cplusplus
 }

@@ -35,11 +35,11 @@ static void cfifoi_get(cfifo_t p_cfifo, void *p_item);
 
 /*======= Global function implementations ===================================*/
 
-cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
-                       void *p_buf,
-                       size_t num_items,
-                       size_t item_size,
-                       size_t buf_size)
+int cfifo_init(cfifo_t p_cfifo,
+               void *p_buf,
+               size_t capacity,
+               size_t item_size,
+               size_t buf_size)
 {
     if (NULL == p_cfifo || NULL == p_buf)
     {
@@ -47,18 +47,18 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
         return CFIFO_ERR_NULL;
     }
 
-    if (!CFIFO_IS_POW_2(num_items))
+    if (!CFIFO_IS_POW_2(capacity))
     {
         return CFIFO_ERR_BAD_SIZE;
     }
 
-    if (!((item_size > 0) && (buf_size / item_size == num_items)))
+    if (!((item_size > 0) && (buf_size / item_size == capacity)))
     {
         return CFIFO_ERR_BAD_SIZE;
     }
 
     p_cfifo->p_buf = (uint8_t *) p_buf;
-    p_cfifo->num_items_mask = num_items - 1;
+    p_cfifo->num_items_mask = capacity - 1;
     p_cfifo->item_size = item_size;
     p_cfifo->read_pos = 0;
     p_cfifo->write_pos = 0;
@@ -66,8 +66,8 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
     return CFIFO_SUCCESS;
 }
 
-cfifo_ret_t cfifo_put(cfifo_t p_cfifo,
-                      const void * const p_item)
+int cfifo_put(cfifo_t p_cfifo,
+              const void * const p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -88,9 +88,9 @@ cfifo_ret_t cfifo_put(cfifo_t p_cfifo,
     return CFIFO_ERR_FULL;
 }
 
-cfifo_ret_t cfifo_write(cfifo_t p_cfifo,
-                        const void * const p_items,
-                        size_t *p_num_items)
+int cfifo_write(cfifo_t p_cfifo,
+                const void * const p_items,
+                size_t *p_num_items)
 {
     size_t i;
     const uint8_t * const p_src = (const uint8_t * const) p_items;
@@ -117,8 +117,8 @@ cfifo_ret_t cfifo_write(cfifo_t p_cfifo,
 
 }
 
-cfifo_ret_t cfifo_get(cfifo_t p_cfifo,
-                      void *p_item)
+int cfifo_get(cfifo_t p_cfifo,
+              void *p_item)
 {
 
     if (NULL == p_cfifo || NULL == p_item)
@@ -140,9 +140,9 @@ cfifo_ret_t cfifo_get(cfifo_t p_cfifo,
     return CFIFO_ERR_EMPTY;
 }
 
-cfifo_ret_t cfifo_read(cfifo_t p_cfifo,
-                       void *p_items,
-                       size_t *p_num_items)
+int cfifo_read(cfifo_t p_cfifo,
+               void *p_items,
+               size_t *p_num_items)
 {
 
     size_t i;
@@ -170,8 +170,8 @@ cfifo_ret_t cfifo_read(cfifo_t p_cfifo,
 
 }
 
-cfifo_ret_t cfifo_peek(cfifo_t p_cfifo,
-                       void *p_item)
+int cfifo_peek(cfifo_t p_cfifo,
+               void *p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -240,7 +240,7 @@ size_t cfifo_available(cfifo_t p_cfifo)
     return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? CFIFO_AVAILABLE : 0;
 }
 
-cfifo_ret_t cfifo_flush(cfifo_t p_cfifo)
+int cfifo_flush(cfifo_t p_cfifo)
 {
     if (NULL == p_cfifo)
     {
