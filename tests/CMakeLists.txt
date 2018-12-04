@@ -16,6 +16,8 @@ set_source_files_properties(run_test.c
 	COMPILE_FLAGS
 	-std=c99
 	-Wextra -Wpedantic -Wall -Werror)
+
 do_test(run_test.c)
 do_test(run_test.cpp)
+do_test(generic_struct_test.c)
 do_test(c89_test.c)
