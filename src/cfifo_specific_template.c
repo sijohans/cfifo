@@ -26,17 +26,17 @@
 
 /*======= Local function prototypes =========================================*/
 
-static size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, iavailable)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo);
-static size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo);
-static void CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipush)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                        const CFIFO_SPECIFIC_TYPE * const p_item);
-static void CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo, CFIFO_SPECIFIC_TYPE *p_item);
+static size_t CFIFO_FUNC(iavailable)(CFIFO_HANDLE p_cfifo);
+static size_t CFIFO_FUNC(isize)(CFIFO_HANDLE p_cfifo);
+static void CFIFO_FUNC(ipush)(CFIFO_HANDLE p_cfifo,
+                              const CFIFO_SPECIFIC_TYPE * const p_item);
+static void CFIFO_FUNC(ipop)(CFIFO_HANDLE p_cfifo, CFIFO_SPECIFIC_TYPE *p_item);
 
 /*======= Global function implementations ===================================*/
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, init)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-        CFIFO_SPECIFIC_TYPE *p_buf,
-        size_t capacity)
+int CFIFO_FUNC(init)(CFIFO_HANDLE p_cfifo,
+                     CFIFO_SPECIFIC_TYPE *p_buf,
+                     size_t capacity)
 {
     if (NULL == p_cfifo || NULL == p_buf)
     {
@@ -57,8 +57,8 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, init)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
     return CFIFO_SUCCESS;
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, push)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                        const CFIFO_SPECIFIC_TYPE * const p_item)
+int CFIFO_FUNC(push)(CFIFO_HANDLE p_cfifo,
+                     const CFIFO_SPECIFIC_TYPE * const p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -71,17 +71,17 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, push)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
         return CFIFO_ERR_INVALID_STATE;
     }
 
-    if (CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, iavailable)(p_cfifo) > 0)
+    if (CFIFO_FUNC(iavailable)(p_cfifo) > 0)
     {
-        CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipush)(p_cfifo, p_item);
+        CFIFO_FUNC(ipush)(p_cfifo, p_item);
         return CFIFO_SUCCESS;
     }
     return CFIFO_ERR_FULL;
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, write)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                         const CFIFO_SPECIFIC_TYPE * const p_items,
-                         size_t *p_num_items)
+int CFIFO_FUNC(write)(CFIFO_HANDLE p_cfifo,
+                      const CFIFO_SPECIFIC_TYPE * const p_items,
+                      size_t *p_num_items)
 {
     size_t i;
 
@@ -96,19 +96,19 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, write)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p
         return CFIFO_ERR_INVALID_STATE;
     }
 
-    (*p_num_items) = MIN((*p_num_items), CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, iavailable)(p_cfifo));
+    (*p_num_items) = MIN((*p_num_items), CFIFO_FUNC(iavailable)(p_cfifo));
 
     for (i = 0; i < (*p_num_items); i++)
     {
-        CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipush)(p_cfifo, &p_items[i]);
+        CFIFO_FUNC(ipush)(p_cfifo, &p_items[i]);
     }
 
     return CFIFO_SUCCESS;
 
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, pop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                       CFIFO_SPECIFIC_TYPE *p_item)
+int CFIFO_FUNC(pop)(CFIFO_HANDLE p_cfifo,
+                    CFIFO_SPECIFIC_TYPE *p_item)
 {
 
     if (NULL == p_cfifo || NULL == p_item)
@@ -122,17 +122,17 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, pop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_c
         return CFIFO_ERR_INVALID_STATE;
     }
 
-    if (CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(p_cfifo) > 0)
+    if (CFIFO_FUNC(isize)(p_cfifo) > 0)
     {
-        CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipop)(p_cfifo, p_item);
+        CFIFO_FUNC(ipop)(p_cfifo, p_item);
         return CFIFO_SUCCESS;
     }
     return CFIFO_ERR_EMPTY;
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, read)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                        CFIFO_SPECIFIC_TYPE *p_items,
-                        size_t *p_num_items)
+int CFIFO_FUNC(read)(CFIFO_HANDLE p_cfifo,
+                     CFIFO_SPECIFIC_TYPE *p_items,
+                     size_t *p_num_items)
 {
 
     size_t i;
@@ -148,19 +148,19 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, read)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
         return CFIFO_ERR_INVALID_STATE;
     }
 
-    (*p_num_items) = MIN((*p_num_items), CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(p_cfifo));
+    (*p_num_items) = MIN((*p_num_items), CFIFO_FUNC(isize)(p_cfifo));
 
     for (i = 0; i < (*p_num_items); i++)
     {
-        CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipop)(p_cfifo, &p_items[i]);
+        CFIFO_FUNC(ipop)(p_cfifo, &p_items[i]);
     }
 
     return CFIFO_SUCCESS;
 
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, peek)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                        CFIFO_SPECIFIC_TYPE *p_item)
+int CFIFO_FUNC(peek)(CFIFO_HANDLE p_cfifo,
+                     CFIFO_SPECIFIC_TYPE *p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -173,7 +173,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, peek)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
         return CFIFO_ERR_INVALID_STATE;
     }
 
-    if (CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(p_cfifo) > 0)
+    if (CFIFO_FUNC(isize)(p_cfifo) > 0)
     {
 #ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
         memcpy(p_item,
@@ -188,8 +188,8 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, peek)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
 
 }
 
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, contains)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                               CFIFO_SPECIFIC_TYPE *p_item)
+size_t CFIFO_FUNC(contains)(CFIFO_HANDLE p_cfifo,
+                            CFIFO_SPECIFIC_TYPE *p_item)
 {
 
     /* Store original read pos. */
@@ -228,17 +228,17 @@ size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, contains)(CFIFO_TYPE(CFIFO_SPECIFIC_N
     return items_found;
 }
 
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, size)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo)
+size_t CFIFO_FUNC(size)(CFIFO_HANDLE p_cfifo)
 {
-    return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(p_cfifo) : 0;
+    return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? CFIFO_FUNC(isize)(p_cfifo) : 0;
 }
 
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, available)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo)
+size_t CFIFO_FUNC(available)(CFIFO_HANDLE p_cfifo)
 {
-    return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, iavailable)(p_cfifo) : 0;
+    return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? CFIFO_FUNC(iavailable)(p_cfifo) : 0;
 }
 
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, flush)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo)
+int CFIFO_FUNC(flush)(CFIFO_HANDLE p_cfifo)
 {
     if (NULL == p_cfifo)
     {
@@ -259,18 +259,18 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, flush)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p
 
 /*======= Local function implementations ====================================*/
 
-static size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, iavailable)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo)
+static size_t CFIFO_FUNC(iavailable)(CFIFO_HANDLE p_cfifo)
 {
-    return p_cfifo->num_items_mask + 1 - CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(p_cfifo);
+    return p_cfifo->num_items_mask + 1 - CFIFO_FUNC(isize)(p_cfifo);
 }
-static size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, isize)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo)
+static size_t CFIFO_FUNC(isize)(CFIFO_HANDLE p_cfifo)
 {
     size_t tmp = p_cfifo->read_pos;
     return p_cfifo->write_pos - tmp;
 }
 
-static void CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipush)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
-                        const CFIFO_SPECIFIC_TYPE * const p_item)
+static void CFIFO_FUNC(ipush)(CFIFO_HANDLE p_cfifo,
+                              const CFIFO_SPECIFIC_TYPE * const p_item)
 {
     CFIFO_SPECIFIC_TYPE *p_dest = &p_cfifo->p_buf[CFIFO_SPECIFIC_WRITE_POS];
 #ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
@@ -283,7 +283,7 @@ static void CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipush)(CFIFO_TYPE(CFIFO_SPECIFIC
     p_cfifo->write_pos++;
 }
 
-static void CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, ipop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo, CFIFO_SPECIFIC_TYPE *p_item)
+static void CFIFO_FUNC(ipop)(CFIFO_HANDLE p_cfifo, CFIFO_SPECIFIC_TYPE *p_item)
 {
 #ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
     memcpy(p_item,

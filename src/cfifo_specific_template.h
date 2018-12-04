@@ -19,14 +19,14 @@ extern "C" {
 
 /*======= Public macro definitions ==========================================*/
 
-#define CFIFO_FUNCTION_HELPER(x, y) cfifo_##x##_##y
-#define CFIFO_FUNCTION(x, y) CFIFO_FUNCTION_HELPER(x, y)
+#define CF_FUNC_HELPER(x, y) cfifo_##x##_##y
+#define CF_FUNC(x, y) CF_FUNC_HELPER(x, y)
 
 #define CFIFO_STRUCT_HELPER(x) cfifo_##x
 #define CFIFO_STRUCT(x) CFIFO_STRUCT_HELPER(x)
 
-#define CFIFO_TYPE_HELPER(x) cfifo_##x##_t
-#define CFIFO_TYPE(x) CFIFO_TYPE_HELPER(x)
+#define CF_TYPE_HELPER(x) cfifo_##x##_t
+#define CF_TYPE(x) CF_TYPE_HELPER(x)
 
 #ifndef CFIFO_SPECIFIC_TYPE
 #include <stdint.h> /* for uint8_t */
@@ -43,6 +43,9 @@ extern "C" {
 #ifndef CFIFO_SPECIFIC_USE_MEMCMP
 #define CFIFO_SPECIFIC_USE_MEMCMP    1
 #endif
+
+#define CFIFO_HANDLE CF_TYPE(CFIFO_SPECIFIC_NAME)
+#define CFIFO_FUNC(x) CF_FUNC(CFIFO_SPECIFIC_NAME, x)
 
 /*
  * Helper macros that results in compile error if the capacity (number of items)
@@ -92,7 +95,7 @@ extern "C" {
         p_cfifo##data##__LINE__ = CFIFO_SPECIFIC_STRUCT_DEF(            \
         capacity, p_cfifo##cfifo_buf##buf##__LINE__                     \
     );                                                                  \
-    CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo = &p_cfifo##data##__LINE__
+    CFIFO_HANDLE p_cfifo = &p_cfifo##data##__LINE__
 
 /**
  * @brief Statically creates a cfifo structure and the buffer.
@@ -115,7 +118,7 @@ extern "C" {
             p_cfifo##data##__LINE__ = CFIFO_SPECIFIC_STRUCT_DEF(        \
         capacity, p_cfifo##cfifo_buf##buf##__LINE__                     \
     );                                                                  \
-    static CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo = &p_cfifo##data##__LINE__
+    static CFIFO_HANDLE p_cfifo = &p_cfifo##data##__LINE__
 
 /* Return codes */
 #ifndef CFIFO_RETURN_CODES
@@ -130,7 +133,7 @@ extern "C" {
 
 /*======= Type Definitions and declarations =================================*/
 
-typedef struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) *CFIFO_TYPE(CFIFO_SPECIFIC_NAME);
+typedef struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) *CFIFO_HANDLE;
 
 struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) {
     CFIFO_SPECIFIC_TYPE   *p_buf;
@@ -148,7 +151,7 @@ struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) {
  * must be equal to num_iteam * item_size.
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, init)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(init)(CFIFO_HANDLE p_cfifo,
         CFIFO_SPECIFIC_TYPE *p_buf,
         size_t capacity);
 
@@ -163,7 +166,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, init)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, push)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(push)(CFIFO_HANDLE p_cfifo,
                         const CFIFO_SPECIFIC_TYPE * const p_item);
 
 /**
@@ -178,7 +181,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, push)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, write)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(write)(CFIFO_HANDLE p_cfifo,
                          const CFIFO_SPECIFIC_TYPE * const p_items,
                          size_t * const p_num_items);
 
@@ -193,7 +196,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, write)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, pop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(pop)(CFIFO_HANDLE p_cfifo,
                        CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
@@ -208,7 +211,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, pop)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_c
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, read)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(read)(CFIFO_HANDLE p_cfifo,
                         CFIFO_SPECIFIC_TYPE *p_items,
                         size_t *p_num_items);
 
@@ -223,7 +226,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, read)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, peek)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+int CFIFO_FUNC(peek)(CFIFO_HANDLE p_cfifo,
                         CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
@@ -235,7 +238,7 @@ int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, peek)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_
  *
  * @return
  */
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, contains)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo,
+size_t CFIFO_FUNC(contains)(CFIFO_HANDLE p_cfifo,
                                CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
@@ -249,7 +252,7 @@ size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, contains)(CFIFO_TYPE(CFIFO_SPECIFIC_N
  * @return  CFIFO_SUCCESS
  *
  */
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, size)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo);
+size_t CFIFO_FUNC(size)(CFIFO_HANDLE p_cfifo);
 
 /**
  * @brief TODO: Brief description.
@@ -262,7 +265,7 @@ size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, size)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME)
  * @return  CFIFO_SUCCESS
  *
  */
-size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, available)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo);
+size_t CFIFO_FUNC(available)(CFIFO_HANDLE p_cfifo);
 
 
 /**
@@ -275,7 +278,7 @@ size_t CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, available)(CFIFO_TYPE(CFIFO_SPECIFIC_
  * @return  CFIFO_SUCCESS
  *
  */
-int CFIFO_FUNCTION(CFIFO_SPECIFIC_NAME, flush)(CFIFO_TYPE(CFIFO_SPECIFIC_NAME) p_cfifo);
+int CFIFO_FUNC(flush)(CFIFO_HANDLE p_cfifo);
 
 #ifdef __cplusplus
 }
