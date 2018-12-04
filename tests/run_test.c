@@ -16,7 +16,7 @@ void struct_test(void)
     uint8_t b = 4;
     struct test s;
     struct test h;
-    cfifo_t fifo = CFIFO_DEF(struct test, 16);
+    CFIFO_CREATE(fifo, struct test, 16);
     assert(CFIFO_BUF_SIZE(sizeof(struct test), 7) == -1);
     assert(CFIFO_BUF_SIZE(sizeof(struct test), 16) == (sizeof(struct test)*16));
     assert((fifo->num_items_mask + 1) == 16);

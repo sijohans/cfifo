@@ -41,7 +41,7 @@ cfifo_ret_t cfifo_init(cfifo_t p_cfifo,
                        size_t item_size,
                        size_t buf_size)
 {
-    if (p_cfifo == NULL || p_buf == NULL)
+    if (NULL == p_cfifo || NULL == p_buf)
     {
         /* Error, null pointers. */
         return CFIFO_ERR_NULL;

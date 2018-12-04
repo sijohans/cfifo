@@ -11,5 +11,11 @@ endmacro(do_test)
 include_directories (../src)
 
 # Test runners
+set_source_files_properties(run_test.c
+	PROPERTIES
+	COMPILE_FLAGS
+	-std=c99
+	-Wextra -Wpedantic -Wall -Werror)
 do_test(run_test.c)
 do_test(run_test.cpp)
+do_test(c89_test.c)

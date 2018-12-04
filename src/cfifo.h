@@ -29,34 +29,40 @@ extern "C" {
 #define CFIFO_BUF_SIZE(y, x) \
         ((CFIFO_IS_POW_2(x) && (((x)*(y)) <= SIZE_MAX)) ? ((x)*(y)) : -1)
 
-#define _CFIFO_CREATE(p_cfifo, type, capacity, scope)                   \
-    scope uint8_t                                                       \
-            cfifo_buf##buffer##__LINE__                                 \
-            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
-    scope struct cfifo_s p_cfifo##data##__LINE__;                       \
-    p_cfifo##data##__LINE__.p_buf = cfifo_buf##buffer##__LINE__;        \
-    p_cfifo##data##__LINE__.num_items_mask = ((capacity) - 1);          \
-    p_cfifo##data##__LINE__.item_size = sizeof(type);                   \
-    p_cfifo##data##__LINE__.read_pos = 0;                               \
-    p_cfifo##data##__LINE__.write_pos = 0;                              \
-    scope cfifo_t p_cfifo = &p_cfifo##data##__LINE__
+#define CFIFO_STRUCT_DEF(type, capacity, buf)                           \
+    {                                                                   \
+        buf,                                                            \
+        ((capacity) - 1),                                               \
+        sizeof(type),                                                   \
+        0,                                                              \
+        0                                                               \
+    }
 
 #define CFIFO_CREATE(p_cfifo, type, capacity) \
-    _CFIFO_CREATE(p_cfifo, type, capacity,)
+    uint8_t                                                             \
+            p_cfifo##cfifo_buf##buf##__LINE__                           \
+            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
+    struct cfifo_s p_cfifo##data##__LINE__ = CFIFO_STRUCT_DEF(          \
+        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
+    );                                                                  \
+    cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 #define CFIFO_CREATE_STATIC(p_cfifo, type, capacity) \
-    _CFIFO_CREATE(p_cfifo, type, capacity, static)
+    static uint8_t                                                      \
+            p_cfifo##cfifo_buf##buf##__LINE__                           \
+            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))];                \
+    static struct cfifo_s p_cfifo##data##__LINE__ = CFIFO_STRUCT_DEF(   \
+        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
+    );                                                                  \
+    static cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 
-/*
- * Does not work with c++
- */
-#define CFIFO_DEF(type, capacity)                                       \
-    &(struct cfifo_s) {                                                 \
-        .p_buf = (uint8_t[CFIFO_BUF_SIZE(sizeof(type),capacity)]) { 0 },\
-        .num_items_mask = ((capacity) - 1),                             \
-        .item_size = sizeof(type),                                      \
-        .read_pos = 0,                                                  \
-        .write_pos = 0                                                  \
-    }
+#define CFIFO_DEF(p_cfifo, type, capacity)                              \
+    uint8_t                                                             \
+            p_cfifo##cfifo_buf##buf##__LINE__                           \
+            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
+    struct cfifo_s p_cfifo##data##__LINE__ =  CFIFO_STRUCT_DEF(         \
+        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
+    );                                                                  \
+    cfifo_t p_cfifo = &p_cfifo##data##__LINE__
 
 /*======= Type Definitions and declarations =================================*/
 
