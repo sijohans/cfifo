@@ -16,12 +16,16 @@ extern "C" {
 
 /* C-Library includes */
 #include <stddef.h> /* for size_t */
-#include <stdint.h> /* for uint8_t */
 
 /*======= Public macro definitions ==========================================*/
 
+#ifndef CFIFO_SPECIFIC_TYPE
+#include <stdint.h> /* for uint8_t */
 #define CFIFO_SPECIFIC_TYPE uint8_t
-#define CFIFO_SPECIFIC_USE_MEMCPY
+#endif
+#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#define CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
+#endif
 
 /*
  * Helper macros that results in compile error if the capacity (number of items)

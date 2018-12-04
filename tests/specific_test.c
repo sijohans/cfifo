@@ -8,13 +8,13 @@
 int main(void)
 {
 
-    uint8_t a;
-    uint8_t b;
+    CFIFO_SPECIFIC_TYPE a;
+    CFIFO_SPECIFIC_TYPE b;
     size_t size;
     size_t i;
 
-    uint8_t rdata[16];
-    uint8_t data[16];
+    CFIFO_SPECIFIC_TYPE rdata[16];
+    CFIFO_SPECIFIC_TYPE data[16];
 
     CFIFO_SPECIFIC_CREATE_STATIC(fifo, 16);
     assert(cfifo_specific_available(fifo) == 16);
@@ -39,7 +39,7 @@ int main(void)
     /* Fill and empty queue */
     for (i = 0; i < 16; i++)
     {
-        a = (uint8_t) i;
+        a = (CFIFO_SPECIFIC_TYPE) i;
         assert(cfifo_specific_push(fifo, &a) == CFIFO_SUCCESS);
         assert(cfifo_specific_size(fifo) == (i + 1));
     }
@@ -131,7 +131,7 @@ int main(void)
     fifo->read_pos = 0 - 5;
     for (i = 0; i < 16; i++)
     {
-        a = (uint8_t) i;
+        a = (CFIFO_SPECIFIC_TYPE) i;
         assert(cfifo_specific_push(fifo, &a) == CFIFO_SUCCESS);
         assert(cfifo_specific_size(fifo) == (i + 1));
     }

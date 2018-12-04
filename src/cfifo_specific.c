@@ -11,7 +11,7 @@
 #include "cfifo_specific.h"
 
 /* C-Library includes */
-#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
 #include <string.h> /* For memcpy */
 #endif
 
@@ -49,7 +49,7 @@ int cfifo_specific_init(cfifo_specific_t p_cfifo,
         return CFIFO_ERR_BAD_SIZE;
     }
 
-    p_cfifo->p_buf = (uint8_t *) p_buf;
+    p_cfifo->p_buf = p_buf;
     p_cfifo->num_items_mask = capacity - 1;
     p_cfifo->read_pos = 0;
     p_cfifo->write_pos = 0;
@@ -84,7 +84,6 @@ int cfifo_specific_write(cfifo_specific_t p_cfifo,
                          size_t *p_num_items)
 {
     size_t i;
-    const uint8_t * const p_src = (const uint8_t * const) p_items;
 
     if (NULL == p_cfifo || NULL == p_items || NULL == p_num_items)
     {
@@ -101,7 +100,7 @@ int cfifo_specific_write(cfifo_specific_t p_cfifo,
 
     for (i = 0; i < (*p_num_items); i++)
     {
-        cfifoi_push(p_cfifo, &p_src[i]);
+        cfifoi_push(p_cfifo, &p_items[i]);
     }
 
     return CFIFO_SUCCESS;
@@ -176,7 +175,7 @@ int cfifo_specific_peek(cfifo_specific_t p_cfifo,
 
     if (cfifoi_size(p_cfifo) > 0)
     {
-#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
         memcpy(p_item,
                &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
                sizeof(CFIFO_SPECIFIC_TYPE));
@@ -210,10 +209,15 @@ size_t cfifo_specific_contains(cfifo_specific_t p_cfifo,
 
     for (i = 0; i < size; i++)
     {
+        #ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
         if (memcmp(p_item,
                    &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
                    sizeof(CFIFO_SPECIFIC_TYPE)) == 0)
         {
+        #else
+        if ((*p_item) == p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS])
+        {
+        #endif
             items_found++;
         }
         p_cfifo->read_pos++;
@@ -269,7 +273,7 @@ static void cfifoi_push(cfifo_specific_t p_cfifo,
                         const CFIFO_SPECIFIC_TYPE * const p_item)
 {
     CFIFO_SPECIFIC_TYPE *p_dest = &p_cfifo->p_buf[CFIFO_SPECIFIC_WRITE_POS];
-#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
     memcpy(p_dest,
            p_item,
            sizeof(CFIFO_SPECIFIC_TYPE));
@@ -281,7 +285,7 @@ static void cfifoi_push(cfifo_specific_t p_cfifo,
 
 static void cfifoi_pop(cfifo_specific_t p_cfifo, CFIFO_SPECIFIC_TYPE *p_item)
 {
-#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#ifdef CFIFO_INTERNAL_SPECIFIC_USE_MEMCPY
     memcpy(p_item,
            &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
            sizeof(CFIFO_SPECIFIC_TYPE));

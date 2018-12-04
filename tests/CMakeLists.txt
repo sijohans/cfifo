@@ -22,3 +22,7 @@ do_test(run_test.cpp)
 do_test(generic_struct_test.c)
 do_test(c89_test.c)
 do_test(specific_test.c)
+
+add_executable(specific_struct_test.c specific_struct_test.c)
+add_sanitizers(specific_struct_test.c)
+add_test(specific_struct_test.c specific_struct_test.c)
