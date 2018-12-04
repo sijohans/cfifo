@@ -136,10 +136,10 @@ extern "C" {
 typedef struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) *CFIFO_HANDLE;
 
 struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) {
-    CFIFO_SPECIFIC_TYPE   *p_buf;
-    size_t                num_items_mask;
-    volatile size_t       read_pos;
-    volatile size_t       write_pos;
+  CFIFO_SPECIFIC_TYPE   *p_buf;
+  size_t                num_items_mask;
+  volatile size_t       read_pos;
+  volatile size_t       write_pos;
 };
 
 /*======= Public function declarations ======================================*/
@@ -152,8 +152,8 @@ struct CFIFO_STRUCT(CFIFO_SPECIFIC_NAME) {
  *
  */
 int CFIFO_FUNC(init)(CFIFO_HANDLE p_cfifo,
-        CFIFO_SPECIFIC_TYPE *p_buf,
-        size_t capacity);
+                     CFIFO_SPECIFIC_TYPE *p_buf,
+                     size_t capacity);
 
 /**
  * @brief TODO: Brief description.
@@ -167,7 +167,7 @@ int CFIFO_FUNC(init)(CFIFO_HANDLE p_cfifo,
  *
  */
 int CFIFO_FUNC(push)(CFIFO_HANDLE p_cfifo,
-                        const CFIFO_SPECIFIC_TYPE * const p_item);
+                     const CFIFO_SPECIFIC_TYPE * const p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -182,8 +182,8 @@ int CFIFO_FUNC(push)(CFIFO_HANDLE p_cfifo,
  *
  */
 int CFIFO_FUNC(write)(CFIFO_HANDLE p_cfifo,
-                         const CFIFO_SPECIFIC_TYPE * const p_items,
-                         size_t * const p_num_items);
+                      const CFIFO_SPECIFIC_TYPE * const p_items,
+                      size_t * const p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -197,7 +197,7 @@ int CFIFO_FUNC(write)(CFIFO_HANDLE p_cfifo,
  *
  */
 int CFIFO_FUNC(pop)(CFIFO_HANDLE p_cfifo,
-                       CFIFO_SPECIFIC_TYPE *p_item);
+                    CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -212,8 +212,8 @@ int CFIFO_FUNC(pop)(CFIFO_HANDLE p_cfifo,
  *
  */
 int CFIFO_FUNC(read)(CFIFO_HANDLE p_cfifo,
-                        CFIFO_SPECIFIC_TYPE *p_items,
-                        size_t *p_num_items);
+                     CFIFO_SPECIFIC_TYPE *p_items,
+                     size_t *p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -227,7 +227,7 @@ int CFIFO_FUNC(read)(CFIFO_HANDLE p_cfifo,
  *
  */
 int CFIFO_FUNC(peek)(CFIFO_HANDLE p_cfifo,
-                        CFIFO_SPECIFIC_TYPE *p_item);
+                     CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief [brief description]
@@ -239,7 +239,7 @@ int CFIFO_FUNC(peek)(CFIFO_HANDLE p_cfifo,
  * @return
  */
 size_t CFIFO_FUNC(contains)(CFIFO_HANDLE p_cfifo,
-                               CFIFO_SPECIFIC_TYPE *p_item);
+                            CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief TODO: Brief description.
