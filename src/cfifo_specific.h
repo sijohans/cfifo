@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 /**
- * @file cfifo_generic.h
+ * @file cfifo_specific.h
  *
  * Description
  *
@@ -20,14 +20,15 @@ extern "C" {
 
 /*======= Public macro definitions ==========================================*/
 
+#define CFIFO_SPECIFIC_TYPE uint8_t
+#define CFIFO_SPECIFIC_USE_MEMCPY
 
 /*
  * Helper macros that results in compile error if the capacity (number of items)
  * is not a power of 2. I.e., 2, 4, 8, 16, ... 2^n.
  */
 #define CFIFO_IS_POW_2(x)   (((x) > 0) && (((x) & (((x) - 1))) == 0))
-#define CFIFO_BUF_SIZE(y, x) \
-        ((CFIFO_IS_POW_2(x) && (((x)*(y)) <= SIZE_MAX)) ? (int) ((x)*(y)) : (int) -1)
+#define CFIFO_SPECIFIC_BUF_SIZE(x) CFIFO_IS_POW_2(x) ? (int) x : (int) -1
 
 /**
  * @brief Macro to define a cfifo structure.
@@ -41,11 +42,10 @@ extern "C" {
  * Is not used to support c89 and C++.
  *
  */
-#define CFIFO_GENERIC_STRUCT_DEF(type, capacity, buf)                   \
+#define CFIFO_SPECIFIC_STRUCT_DEF(capacity, buf)                        \
     {                                                                   \
         buf,                                                            \
         ((capacity) - 1),                                               \
-        sizeof(type),                                                   \
         0,                                                              \
         0                                                               \
     }
@@ -57,21 +57,21 @@ extern "C" {
  * power or two. I.e., 2, 4, 8, ... 2^n. If the capacity is not power
  * of two the usade of this macro will result in a compile error.
  *
- * CFIFO_GENERIC_CREATE_STATIC(my_fifo, uint32_t, 32);
+ * CFIFO_SPECIFIC_CREATE_STATIC(my_fifo, uint32_t, 32);
  *
  * uint32_t a = 4;
- * cfifo_generic_push(my_fifo, &a);
+ * cfifo_specific_push(my_fifo, &a);
  *
  */
-#define CFIFO_GENERIC_CREATE(p_cfifo, type, capacity)                   \
-    uint8_t                                                             \
+#define CFIFO_SPECIFIC_CREATE(p_cfifo, capacity)                        \
+    CFIFO_SPECIFIC_TYPE                                                 \
             p_cfifo##cfifo_buf##buf##__LINE__                           \
-            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))] = {0};          \
-    struct cfifo_generic                                                \
-        p_cfifo##data##__LINE__ = CFIFO_GENERIC_STRUCT_DEF(             \
-        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
+            [CFIFO_SPECIFIC_BUF_SIZE(capacity)] = {0};                  \
+    struct cfifo_specific                                               \
+        p_cfifo##data##__LINE__ = CFIFO_SPECIFIC_STRUCT_DEF(            \
+        capacity, p_cfifo##cfifo_buf##buf##__LINE__                     \
     );                                                                  \
-    cfifo_generic_t p_cfifo = &p_cfifo##data##__LINE__
+    cfifo_specific_t p_cfifo = &p_cfifo##data##__LINE__
 
 /**
  * @brief Statically creates a cfifo structure and the buffer.
@@ -80,21 +80,21 @@ extern "C" {
  * power or two. I.e., 2, 4, 8, ... 2^n. If the capacity is not power
  * of two the usade of this macro will result in a compile error.
  *
- * CFIFO_GENERIC_CREATE_STATIC(my_fifo, uint32_t, 32);
+ * CFIFO_SPECIFIC_CREATE_STATIC(my_fifo, uint32_t, 32);
  *
  * uint32_t a = 4;
- * cfifo_generic_push(my_fifo, &a);
+ * cfifo_specific_push(my_fifo, &a);
  *
  */
-#define CFIFO_GENERIC_CREATE_STATIC(p_cfifo, type, capacity)            \
-    static uint8_t                                                      \
+#define CFIFO_SPECIFIC_CREATE_STATIC(p_cfifo, capacity)                 \
+    static CFIFO_SPECIFIC_TYPE                                          \
             p_cfifo##cfifo_buf##buf##__LINE__                           \
-            [CFIFO_BUF_SIZE((sizeof(type)),(capacity))];                \
-    static struct cfifo_generic                                         \
-            p_cfifo##data##__LINE__ = CFIFO_GENERIC_STRUCT_DEF(         \
-        type, capacity, p_cfifo##cfifo_buf##buf##__LINE__               \
+            [CFIFO_SPECIFIC_BUF_SIZE(capacity)];                        \
+    static struct cfifo_specific                                        \
+            p_cfifo##data##__LINE__ = CFIFO_SPECIFIC_STRUCT_DEF(        \
+        capacity, p_cfifo##cfifo_buf##buf##__LINE__                     \
     );                                                                  \
-    static cfifo_generic_t p_cfifo = &p_cfifo##data##__LINE__
+    static cfifo_specific_t p_cfifo = &p_cfifo##data##__LINE__
 
 /* Return codes */
 #ifndef CFIFO_RETURN_CODES
@@ -109,14 +109,13 @@ extern "C" {
 
 /*======= Type Definitions and declarations =================================*/
 
-typedef struct cfifo_generic *cfifo_generic_t;
+typedef struct cfifo_specific *cfifo_specific_t;
 
-struct cfifo_generic {
-  uint8_t         *p_buf;
-  size_t          num_items_mask;
-  size_t          item_size;
-  volatile size_t read_pos;
-  volatile size_t write_pos;
+struct cfifo_specific {
+  CFIFO_SPECIFIC_TYPE   *p_buf;
+  size_t                num_items_mask;
+  volatile size_t       read_pos;
+  volatile size_t       write_pos;
 };
 
 /*======= Public function declarations ======================================*/
@@ -128,11 +127,9 @@ struct cfifo_generic {
  * must be equal to num_iteam * item_size.
  *
  */
-int cfifo_generic_init(cfifo_generic_t p_cfifo,
-                       void *p_buf,
-                       size_t capacity,
-                       size_t item_size,
-                       size_t buf_size);
+int cfifo_specific_init(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_buf,
+                        size_t capacity);
 
 /**
  * @brief TODO: Brief description.
@@ -145,8 +142,8 @@ int cfifo_generic_init(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_push(cfifo_generic_t p_cfifo,
-                       const void * const p_item);
+int cfifo_specific_push(cfifo_specific_t p_cfifo,
+                        const CFIFO_SPECIFIC_TYPE * const p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -160,9 +157,9 @@ int cfifo_generic_push(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_write(cfifo_generic_t p_cfifo,
-                        const void * const p_items,
-                        size_t * const p_num_items);
+int cfifo_specific_write(cfifo_specific_t p_cfifo,
+                         const CFIFO_SPECIFIC_TYPE * const p_items,
+                         size_t * const p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -175,8 +172,8 @@ int cfifo_generic_write(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_pop(cfifo_generic_t p_cfifo,
-                      void *p_item);
+int cfifo_specific_pop(cfifo_specific_t p_cfifo,
+                       CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -190,9 +187,9 @@ int cfifo_generic_pop(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_read(cfifo_generic_t p_cfifo,
-                       void *p_items,
-                       size_t *p_num_items);
+int cfifo_specific_read(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_items,
+                        size_t *p_num_items);
 
 /**
  * @brief TODO: Brief description.
@@ -205,8 +202,8 @@ int cfifo_generic_read(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_peek(cfifo_generic_t p_cfifo,
-                       void *p_item);
+int cfifo_specific_peek(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief [brief description]
@@ -217,8 +214,8 @@ int cfifo_generic_peek(cfifo_generic_t p_cfifo,
  *
  * @return
  */
-size_t cfifo_generic_contains(cfifo_generic_t p_cfifo,
-                              void *p_item);
+size_t cfifo_specific_contains(cfifo_specific_t p_cfifo,
+                               CFIFO_SPECIFIC_TYPE *p_item);
 
 /**
  * @brief TODO: Brief description.
@@ -231,7 +228,7 @@ size_t cfifo_generic_contains(cfifo_generic_t p_cfifo,
  * @return  CFIFO_SUCCESS
  *
  */
-size_t cfifo_generic_size(cfifo_generic_t p_cfifo);
+size_t cfifo_specific_size(cfifo_specific_t p_cfifo);
 
 /**
  * @brief TODO: Brief description.
@@ -244,7 +241,7 @@ size_t cfifo_generic_size(cfifo_generic_t p_cfifo);
  * @return  CFIFO_SUCCESS
  *
  */
-size_t cfifo_generic_available(cfifo_generic_t p_cfifo);
+size_t cfifo_specific_available(cfifo_specific_t p_cfifo);
 
 
 /**
@@ -257,7 +254,7 @@ size_t cfifo_generic_available(cfifo_generic_t p_cfifo);
  * @return  CFIFO_SUCCESS
  *
  */
-int cfifo_generic_flush(cfifo_generic_t p_cfifo);
+int cfifo_specific_flush(cfifo_specific_t p_cfifo);
 
 #ifdef __cplusplus
 }

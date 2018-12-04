@@ -9,3 +9,7 @@ ctest
 
 lcov --base-directory .. --directory .. --capture --output-file coverage.info
 genhtml -o . coverage.info
+
+cd ..
+
+make -f size.mk clean size

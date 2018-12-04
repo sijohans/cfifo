@@ -27,9 +27,9 @@ void struct_test(void)
     s.c = 3;
     s.d = &b;
 
-    assert(cfifo_generic_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &s) == CFIFO_SUCCESS);
     assert(cfifo_generic_size(fifo) == 1);
-    assert(cfifo_generic_get(fifo, &h) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &h) == CFIFO_SUCCESS);
     assert(h.a == s.a);
     assert(h.b == s.b);
     assert(h.c == s.c);
@@ -54,15 +54,15 @@ void contains_test(void) {
     assert(cfifo_generic_contains(NULL, NULL) == 0);
     assert(cfifo_generic_contains(NULL, &s) == 0);
 
-    assert(cfifo_generic_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &s) == CFIFO_SUCCESS);
     assert(cfifo_generic_contains(fifo, &s) == 1);
-    assert(cfifo_generic_put(fifo, &s) == CFIFO_SUCCESS);
-    assert(cfifo_generic_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &s) == CFIFO_SUCCESS);
     assert(cfifo_generic_contains(fifo, &s) == 3);
     s.a = 3;
     assert(cfifo_generic_contains(fifo, &s) == 0);
 
-    assert(cfifo_generic_get(fifo, &h) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &h) == CFIFO_SUCCESS);
     assert(h.a == 1);
     assert(h.b == 2);
     assert(h.c == 3);
@@ -78,18 +78,18 @@ void malloc_buffer_test(void)
     int ret = cfifo_generic_init(fifo, buffer, 4, sizeof(uint32_t), (sizeof(uint32_t) * 4));
     assert(ret == CFIFO_SUCCESS);
     uint32_t a = 1;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS); a++;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS); a++;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS); a++;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS); a++;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_ERR_FULL);
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS); a++;
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS); a++;
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS); a++;
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS); a++;
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_ERR_FULL);
     a = 4;
     assert(cfifo_generic_contains(fifo, &a) == 1);
     uint32_t b = 1;
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS); assert(a == b); b++;
     free(buffer);
 }
 
@@ -114,13 +114,13 @@ int main(void)
 
     /* Empty queue from stat */
     assert(cfifo_generic_size(fifo) == 0);
-    assert(cfifo_generic_get(fifo, &b) == CFIFO_ERR_EMPTY);
+    assert(cfifo_generic_pop(fifo, &b) == CFIFO_ERR_EMPTY);
 
     /* One queue item */
     a = 1;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS);
     assert(cfifo_generic_size(fifo) == 1);
-    assert(cfifo_generic_get(fifo, &b) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &b) == CFIFO_SUCCESS);
     assert(b == a);
     assert(cfifo_generic_size(fifo) == 0);
 
@@ -128,20 +128,20 @@ int main(void)
     for (i = 0; i < 16; i++)
     {
         a = (uint8_t) i;
-        assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS);
+        assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS);
         assert(cfifo_generic_size(fifo) == (i + 1));
     }
 
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_ERR_FULL);
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_ERR_FULL);
 
     for (i = 0; i < 16; i++)
     {
-        assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS);
+        assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS);
         assert(a == i);
         assert(cfifo_generic_size(fifo) == 15 - i);
     }
 
-    assert(cfifo_generic_get(fifo, &b) == CFIFO_ERR_EMPTY);
+    assert(cfifo_generic_pop(fifo, &b) == CFIFO_ERR_EMPTY);
 
     for (i = 0; i < 16; i++)
     {
@@ -170,9 +170,9 @@ int main(void)
     assert(size == 13);
     assert(cfifo_generic_size(fifo) == 13);
 
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS);
     assert(a == data[0]);
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS);
     assert(a == data[1]);
     assert(cfifo_generic_size(fifo) == 11);
 
@@ -192,12 +192,12 @@ int main(void)
 
     /* One queue item */
     a = 67;
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS);
     assert(cfifo_generic_size(fifo) == 1);
     assert(cfifo_generic_peek(fifo, &b) == CFIFO_SUCCESS);
     assert(b == a);
     assert(cfifo_generic_size(fifo) == 1);
-    assert(cfifo_generic_get(fifo, &b) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &b) == CFIFO_SUCCESS);
     assert(b == a);
     assert(cfifo_generic_size(fifo) == 0);
 
@@ -220,21 +220,21 @@ int main(void)
     for (i = 0; i < 16; i++)
     {
         a = (uint8_t) i;
-        assert(cfifo_generic_put(fifo, &a) == CFIFO_SUCCESS);
+        assert(cfifo_generic_push(fifo, &a) == CFIFO_SUCCESS);
         assert(cfifo_generic_size(fifo) == (i + 1));
     }
 
     for (i = 0; i < 16; i++)
     {
         assert(cfifo_generic_size(fifo) == 16 - i);
-        assert(cfifo_generic_get(fifo, &a) == CFIFO_SUCCESS);
+        assert(cfifo_generic_pop(fifo, &a) == CFIFO_SUCCESS);
     }
 
     assert(cfifo_generic_size(fifo) == 0);
 
-    assert(cfifo_generic_put(NULL, &a) == CFIFO_ERR_NULL);
-    assert(cfifo_generic_put(NULL, NULL) == CFIFO_ERR_NULL);
-    assert(cfifo_generic_put(fifo, NULL) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_push(NULL, &a) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_push(NULL, NULL) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_push(fifo, NULL) == CFIFO_ERR_NULL);
 
     assert(cfifo_generic_write(NULL, &a, &size) == CFIFO_ERR_NULL);
     assert(cfifo_generic_write(NULL, NULL, &size) == CFIFO_ERR_NULL);
@@ -256,9 +256,9 @@ int main(void)
     assert(cfifo_generic_read(fifo, NULL, &size) == CFIFO_ERR_NULL);
 
 
-    assert(cfifo_generic_get(NULL, &a) == CFIFO_ERR_NULL);
-    assert(cfifo_generic_get(NULL, NULL) == CFIFO_ERR_NULL);
-    assert(cfifo_generic_get(fifo, NULL) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_pop(NULL, &a) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_pop(NULL, NULL) == CFIFO_ERR_NULL);
+    assert(cfifo_generic_pop(fifo, NULL) == CFIFO_ERR_NULL);
 
     assert(cfifo_generic_peek(NULL, &a) == CFIFO_ERR_NULL);
     assert(cfifo_generic_peek(NULL, NULL) == CFIFO_ERR_NULL);
@@ -273,10 +273,10 @@ int main(void)
     assert(cfifo_generic_init(fifo, rdata, 15, 1, 15) == CFIFO_ERR_BAD_SIZE);
     memset(fifo, 0x00, sizeof(struct cfifo_generic));
     assert(cfifo_generic_init(fifo, rdata, 16, 1, 15) == CFIFO_ERR_BAD_SIZE);
-    assert(cfifo_generic_put(fifo, &a) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_generic_push(fifo, &a) == CFIFO_ERR_INVALID_STATE);
     assert(cfifo_generic_write(fifo, &a, &size) == CFIFO_ERR_INVALID_STATE);
     assert(cfifo_generic_read(fifo, &a, &size) == CFIFO_ERR_INVALID_STATE);
-    assert(cfifo_generic_get(fifo, &a) == CFIFO_ERR_INVALID_STATE);
+    assert(cfifo_generic_pop(fifo, &a) == CFIFO_ERR_INVALID_STATE);
     assert(cfifo_generic_peek(fifo, &a) == CFIFO_ERR_INVALID_STATE);
     assert(cfifo_generic_flush(fifo) == CFIFO_ERR_INVALID_STATE);
 

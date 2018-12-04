@@ -1,5 +1,5 @@
 /**
- * @file cfifo_generic.c
+ * @file cfifo_specific.c
  *
  * Description
  *
@@ -7,11 +7,13 @@
 
 /*======= Includes ==========================================================*/
 
-/* C-Library includes */
-#include <string.h> /* For memcpy */
-
 /* Local includes */
-#include "cfifo_generic.h"
+#include "cfifo_specific.h"
+
+/* C-Library includes */
+#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+#include <string.h> /* For memcpy */
+#endif
 
 /*======= Local Macro Definitions ===========================================*/
 
@@ -19,25 +21,22 @@
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 #endif
 
-#define CFIFO_WRITE_POS     (p_cfifo->write_pos & p_cfifo->num_items_mask)
-#define CFIFO_READ_POS      (p_cfifo->read_pos & p_cfifo->num_items_mask)
-#define CFIFO_WRITE_OFFSET  (CFIFO_WRITE_POS * p_cfifo->item_size)
-#define CFIFO_READ_OFFSET   (CFIFO_READ_POS * p_cfifo->item_size)
+#define CFIFO_SPECIFIC_WRITE_POS    (p_cfifo->write_pos & p_cfifo->num_items_mask)
+#define CFIFO_SPECIFIC_READ_POS     (p_cfifo->read_pos & p_cfifo->num_items_mask)
 
 /*======= Local function prototypes =========================================*/
 
-static size_t cfifoi_available(cfifo_generic_t p_cfifo);
-static size_t cfifoi_size(cfifo_generic_t p_cfifo);
-static void cfifoi_push(cfifo_generic_t p_cfifo, const void * const p_item);
-static void cfifoi_pop(cfifo_generic_t p_cfifo, void *p_item);
+static size_t cfifoi_available(cfifo_specific_t p_cfifo);
+static size_t cfifoi_size(cfifo_specific_t p_cfifo);
+static void cfifoi_push(cfifo_specific_t p_cfifo,
+                        const CFIFO_SPECIFIC_TYPE * const p_item);
+static void cfifoi_pop(cfifo_specific_t p_cfifo, CFIFO_SPECIFIC_TYPE *p_item);
 
 /*======= Global function implementations ===================================*/
 
-int cfifo_generic_init(cfifo_generic_t p_cfifo,
-                       void *p_buf,
-                       size_t capacity,
-                       size_t item_size,
-                       size_t buf_size)
+int cfifo_specific_init(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_buf,
+                        size_t capacity)
 {
     if (NULL == p_cfifo || NULL == p_buf)
     {
@@ -50,22 +49,16 @@ int cfifo_generic_init(cfifo_generic_t p_cfifo,
         return CFIFO_ERR_BAD_SIZE;
     }
 
-    if (!((item_size > 0) && (buf_size / item_size == capacity)))
-    {
-        return CFIFO_ERR_BAD_SIZE;
-    }
-
     p_cfifo->p_buf = (uint8_t *) p_buf;
     p_cfifo->num_items_mask = capacity - 1;
-    p_cfifo->item_size = item_size;
     p_cfifo->read_pos = 0;
     p_cfifo->write_pos = 0;
 
     return CFIFO_SUCCESS;
 }
 
-int cfifo_generic_push(cfifo_generic_t p_cfifo,
-                       const void * const p_item)
+int cfifo_specific_push(cfifo_specific_t p_cfifo,
+                        const CFIFO_SPECIFIC_TYPE * const p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -86,9 +79,9 @@ int cfifo_generic_push(cfifo_generic_t p_cfifo,
     return CFIFO_ERR_FULL;
 }
 
-int cfifo_generic_write(cfifo_generic_t p_cfifo,
-                        const void * const p_items,
-                        size_t *p_num_items)
+int cfifo_specific_write(cfifo_specific_t p_cfifo,
+                         const CFIFO_SPECIFIC_TYPE * const p_items,
+                         size_t *p_num_items)
 {
     size_t i;
     const uint8_t * const p_src = (const uint8_t * const) p_items;
@@ -108,15 +101,15 @@ int cfifo_generic_write(cfifo_generic_t p_cfifo,
 
     for (i = 0; i < (*p_num_items); i++)
     {
-        cfifoi_push(p_cfifo, &p_src[i * p_cfifo->item_size]);
+        cfifoi_push(p_cfifo, &p_src[i]);
     }
 
     return CFIFO_SUCCESS;
 
 }
 
-int cfifo_generic_pop(cfifo_generic_t p_cfifo,
-                      void *p_item)
+int cfifo_specific_pop(cfifo_specific_t p_cfifo,
+                       CFIFO_SPECIFIC_TYPE *p_item)
 {
 
     if (NULL == p_cfifo || NULL == p_item)
@@ -138,13 +131,12 @@ int cfifo_generic_pop(cfifo_generic_t p_cfifo,
     return CFIFO_ERR_EMPTY;
 }
 
-int cfifo_generic_read(cfifo_generic_t p_cfifo,
-                       void *p_items,
-                       size_t *p_num_items)
+int cfifo_specific_read(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_items,
+                        size_t *p_num_items)
 {
 
     size_t i;
-    uint8_t *p_dest = (uint8_t *) p_items;
 
     if (NULL == p_cfifo || NULL == p_items || NULL == p_num_items)
     {
@@ -161,15 +153,15 @@ int cfifo_generic_read(cfifo_generic_t p_cfifo,
 
     for (i = 0; i < (*p_num_items); i++)
     {
-        cfifoi_pop(p_cfifo, &p_dest[i * p_cfifo->item_size]);
+        cfifoi_pop(p_cfifo, &p_items[i]);
     }
 
     return CFIFO_SUCCESS;
 
 }
 
-int cfifo_generic_peek(cfifo_generic_t p_cfifo,
-                       void *p_item)
+int cfifo_specific_peek(cfifo_specific_t p_cfifo,
+                        CFIFO_SPECIFIC_TYPE *p_item)
 {
     if (NULL == p_cfifo || NULL == p_item)
     {
@@ -184,17 +176,21 @@ int cfifo_generic_peek(cfifo_generic_t p_cfifo,
 
     if (cfifoi_size(p_cfifo) > 0)
     {
+#ifdef CFIFO_SPECIFIC_USE_MEMCPY
         memcpy(p_item,
-               &p_cfifo->p_buf[CFIFO_READ_OFFSET],
-               p_cfifo->item_size);
+               &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
+               sizeof(CFIFO_SPECIFIC_TYPE));
+#else
+        *p_item = p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS];
+#endif
         return CFIFO_SUCCESS;
     }
     return CFIFO_ERR_EMPTY;
 
 }
 
-size_t cfifo_generic_contains(cfifo_generic_t p_cfifo,
-                              void *p_item)
+size_t cfifo_specific_contains(cfifo_specific_t p_cfifo,
+                               CFIFO_SPECIFIC_TYPE *p_item)
 {
 
     /* Store original read pos. */
@@ -215,8 +211,8 @@ size_t cfifo_generic_contains(cfifo_generic_t p_cfifo,
     for (i = 0; i < size; i++)
     {
         if (memcmp(p_item,
-                   &p_cfifo->p_buf[CFIFO_READ_OFFSET],
-                   p_cfifo->item_size) == 0)
+                   &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
+                   sizeof(CFIFO_SPECIFIC_TYPE)) == 0)
         {
             items_found++;
         }
@@ -228,17 +224,17 @@ size_t cfifo_generic_contains(cfifo_generic_t p_cfifo,
     return items_found;
 }
 
-size_t cfifo_generic_size(cfifo_generic_t p_cfifo)
+size_t cfifo_specific_size(cfifo_specific_t p_cfifo)
 {
     return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? cfifoi_size(p_cfifo) : 0;
 }
 
-size_t cfifo_generic_available(cfifo_generic_t p_cfifo)
+size_t cfifo_specific_available(cfifo_specific_t p_cfifo)
 {
     return (NULL != p_cfifo && p_cfifo->p_buf != NULL) ? cfifoi_available(p_cfifo) : 0;
 }
 
-int cfifo_generic_flush(cfifo_generic_t p_cfifo)
+int cfifo_specific_flush(cfifo_specific_t p_cfifo)
 {
     if (NULL == p_cfifo)
     {
@@ -259,28 +255,38 @@ int cfifo_generic_flush(cfifo_generic_t p_cfifo)
 
 /*======= Local function implementations ====================================*/
 
-static size_t cfifoi_available(cfifo_generic_t p_cfifo)
+static size_t cfifoi_available(cfifo_specific_t p_cfifo)
 {
     return p_cfifo->num_items_mask + 1 - cfifoi_size(p_cfifo);
 }
-static size_t cfifoi_size(cfifo_generic_t p_cfifo)
+static size_t cfifoi_size(cfifo_specific_t p_cfifo)
 {
     size_t tmp = p_cfifo->read_pos;
     return p_cfifo->write_pos - tmp;
 }
 
-static void cfifoi_push(cfifo_generic_t p_cfifo, const void * const p_item)
+static void cfifoi_push(cfifo_specific_t p_cfifo,
+                        const CFIFO_SPECIFIC_TYPE * const p_item)
 {
-    memcpy(&p_cfifo->p_buf[CFIFO_WRITE_OFFSET],
+    CFIFO_SPECIFIC_TYPE *p_dest = &p_cfifo->p_buf[CFIFO_SPECIFIC_WRITE_POS];
+#ifdef CFIFO_SPECIFIC_USE_MEMCPY
+    memcpy(p_dest,
            p_item,
-           p_cfifo->item_size);
+           sizeof(CFIFO_SPECIFIC_TYPE));
+#else
+    *p_dest = *p_item;
+#endif
     p_cfifo->write_pos++;
 }
 
-static void cfifoi_pop(cfifo_generic_t p_cfifo, void *p_item)
+static void cfifoi_pop(cfifo_specific_t p_cfifo, CFIFO_SPECIFIC_TYPE *p_item)
 {
+#ifdef CFIFO_SPECIFIC_USE_MEMCPY
     memcpy(p_item,
-           &p_cfifo->p_buf[CFIFO_READ_OFFSET],
-           p_cfifo->item_size);
+           &p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS],
+           sizeof(CFIFO_SPECIFIC_TYPE));
+#else
+    (*p_item) = p_cfifo->p_buf[CFIFO_SPECIFIC_READ_POS];
+#endif
     p_cfifo->read_pos++;
 }

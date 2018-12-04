@@ -28,9 +28,9 @@ int main(void)
     s.c = 3;
     s.d = &b;
 
-    assert(cfifo_generic_put(fifo, &s) == CFIFO_SUCCESS);
+    assert(cfifo_generic_push(fifo, &s) == CFIFO_SUCCESS);
     assert(cfifo_generic_size(fifo) == 1);
-    assert(cfifo_generic_get(fifo, &h) == CFIFO_SUCCESS);
+    assert(cfifo_generic_pop(fifo, &h) == CFIFO_SUCCESS);
     assert(h.a == s.a);
     assert(h.b == s.b);
     assert(h.c == s.c);
